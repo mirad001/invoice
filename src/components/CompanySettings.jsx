@@ -1,0 +1,103 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Save, X, RotateCcw } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+
+const FIELDS = [
+  { key: 'name', label: 'Company Name', type: 'text' },
+  { key: 'email', label: 'Email', type: 'email' },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'website', label: 'Website', type: 'text' },
+  { key: 'address', label: 'Address', type: 'text' },
+];
+
+export default function CompanySettings({ companyId, setView }) {
+  const { companies, updateCompany, resetCompanies } = useApp();
+  const company = companies.find(c => c.id === companyId);
+  const [form, setForm] = useState({ ...company });
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    updateCompany(companyId, form);
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      setView({ type: 'company', companyId });
+    }, 900);
+  };
+
+  return (
+    <div className="max-w-xl mx-auto p-6">
+      <div className="flex items-center gap-3 mb-8">
+        <button
+          onClick={() => setView({ type: 'company', companyId })}
+          className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
+        >
+          <X size={18} />
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-slate-800">Company Settings</h1>
+          <p className="text-sm text-slate-500">{company.name}</p>
+        </div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-invoice p-6 space-y-5"
+      >
+        {FIELDS.map(({ key, label, type }) => (
+          <div key={key}>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+              {label}
+            </label>
+            <input
+              type={type}
+              value={form[key] || ''}
+              onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none text-sm transition-all"
+            />
+          </div>
+        ))}
+
+        <div className="flex gap-3 pt-2">
+          <button
+            onClick={handleSave}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+              saved
+                ? 'bg-emerald-500 text-white'
+                : 'bg-accent text-white hover:bg-accent-dark'
+            }`}
+          >
+            <Save size={15} />
+            {saved ? 'Saved!' : 'Save Changes'}
+          </button>
+          <button
+            onClick={() => setView({ type: 'company', companyId })}
+            className="px-4 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-600 transition-all"
+          >
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+
+      <div className="mt-6 p-4 rounded-xl border border-slate-200 bg-slate-50">
+        <p className="text-xs text-slate-500 mb-3">
+          Want to restore all companies to their original defaults?
+        </p>
+        <button
+          onClick={() => {
+            if (confirm('Reset ALL company details to defaults? This cannot be undone.')) {
+              resetCompanies();
+              setView({ type: 'company', companyId });
+            }
+          }}
+          className="flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+        >
+          <RotateCcw size={12} />
+          Reset all companies to defaults
+        </button>
+      </div>
+    </div>
+  );
+}
