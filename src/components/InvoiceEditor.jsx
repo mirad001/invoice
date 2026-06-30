@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Trash2, Printer, FileDown, Plus } from 'lucide-react';
+import { Trash2, Printer, FileDown, Plus, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
   calculateTotals, formatCurrency, formatDate, newId, newItemId,
@@ -65,6 +65,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
   );
   const [isDirty, setIsDirty] = useState(isNew);
   const [saveMsg, setSaveMsg] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const monthStart = getStartOfMonth();
   const companyInvoices = useMemo(
@@ -166,20 +167,46 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
   const handlePrint = () => window.print();
 
   const handleExportPDF = async () => {
-    if (!invoiceRef.current) return;
+    if (!invoiceRef.current || pdfLoading) return;
+    setPdfLoading(true);
     try {
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
-      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true, logging: false });
+
+      // Hide edit-only elements before capturing
+      const noPrintEls = invoiceRef.current.querySelectorAll('.no-print');
+      noPrintEls.forEach(el => { el.dataset.prevDisplay = el.style.display; el.style.display = 'none'; });
+
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      // Restore hidden elements
+      noPrintEls.forEach(el => { el.style.display = el.dataset.prevDisplay || ''; });
+
       const img = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const w = pdf.internal.pageSize.getWidth();
-      const h = (canvas.height * w) / canvas.width;
-      pdf.addImage(img, 'PNG', 0, 0, w, h);
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgH = (canvas.height * pageW) / canvas.width;
+
+      // Split across pages if content is taller than one A4 page
+      let y = 0;
+      while (y < imgH) {
+        if (y > 0) pdf.addPage();
+        pdf.addImage(img, 'PNG', 0, -y, pageW, imgH);
+        y += pageH;
+      }
+
       pdf.save(`${invoice.invoiceNumber}.pdf`);
     } catch (e) {
       console.error(e);
       alert('PDF export failed. Try printing instead.');
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -203,8 +230,8 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
         <button onClick={handlePrint} title="Print" className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all">
           <Printer size={15} />
         </button>
-        <button onClick={handleExportPDF} title="Export PDF" className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all">
-          <FileDown size={15} />
+        <button onClick={handleExportPDF} title="Download PDF" disabled={pdfLoading} className="p-1.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+          {pdfLoading ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />}
         </button>
         <button onClick={handleDelete} title="Delete" className="p-1.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all">
           <Trash2 size={15} />
@@ -490,12 +517,22 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               Customer boxes stay empty.
             </p>
 
-            <div className="border-t border-slate-100 pt-3">
+            <div className="border-t border-slate-100 pt-3 space-y-2">
               <button
                 onClick={doSave}
                 className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl transition-all text-sm"
               >
                 {saveMsg || 'Save'}
+              </button>
+              <button
+                onClick={handleExportPDF}
+                disabled={pdfLoading}
+                className="w-full flex items-center justify-center gap-2 border border-slate-200 hover:border-accent hover:text-accent text-slate-600 font-semibold py-2 rounded-xl transition-all text-sm disabled:opacity-40"
+              >
+                {pdfLoading
+                  ? <><Loader2 size={14} className="animate-spin" /> Generating…</>
+                  : <><FileDown size={14} /> Download PDF</>
+                }
               </button>
             </div>
           </div>
