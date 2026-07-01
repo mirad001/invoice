@@ -36,9 +36,9 @@ function makeInvoice(company, invoiceNumber) {
     companyId: company.id,
     date: now.slice(0, 10),
     dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
-    teamCode: '',
+    serviceId: '',
     billTo: { name: '', address: '', email: '', phone: '' },
-    clientDetails: { name: '', address: '' },
+    bankDetails: company.bankDetails || '',
     lineItems: items,
     subtotal,
     taxRate: 0.1,
@@ -303,14 +303,14 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                     </div>
                   </div>
 
-                  {/* Team Code */}
+                  {/* Service ID */}
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Team Code</div>
+                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Service ID</div>
                     <input
                       className="bg-transparent border border-transparent hover:border-white/30 focus:border-accent focus:bg-white/10 outline-none rounded px-1 py-0.5 text-slate-300 text-xs transition-colors w-full placeholder-slate-600"
                       placeholder="—"
-                      value={invoice.teamCode || ''}
-                      onChange={e => upd({ teamCode: e.target.value })}
+                      value={invoice.serviceId || ''}
+                      onChange={e => upd({ serviceId: e.target.value })}
                     />
                   </div>
                 </div>
@@ -343,20 +343,17 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               </div>
             </div>
 
-            {/* Job / property details */}
+            {/* Bank Details — pre-filled per company, editable */}
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                Job / property details
+                Bank Details
               </div>
               <div className="border border-slate-200 rounded-lg p-3 min-h-[90px]">
                 <textarea
                   className="inv-textarea h-20"
-                  placeholder="Property, notes, special requests..."
-                  value={[invoice.clientDetails.name, invoice.clientDetails.address].join('\n')}
-                  onChange={e => {
-                    const [name = '', address = ''] = e.target.value.split('\n');
-                    upd(prev => ({ ...prev, clientDetails: { name, address } }));
-                  }}
+                  placeholder="Account Name&#10;BSB&#10;Account No"
+                  value={invoice.bankDetails || ''}
+                  onChange={e => upd({ bankDetails: e.target.value })}
                 />
               </div>
             </div>
@@ -431,7 +428,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               className="no-print mt-3 flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-dark transition-colors py-1"
             >
               <Plus size={13} />
-              Add line item
+              + Add Service
             </button>
           </div>
 

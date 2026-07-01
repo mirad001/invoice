@@ -8,17 +8,32 @@ import InvoiceEditor from './components/InvoiceEditor';
 import CompanySettings from './components/CompanySettings';
 
 function AppInner() {
-  const { currentUser } = useApp();
-  const [view, setView] = useState({ type: 'dashboard' });
+  const { currentUser, companies, peekAndBumpCounter } = useApp();
+
+  // Staff always starts on a new invoice for the first company.
+  // Admin starts on the dashboard.
+  const getInitialView = () => {
+    if (!currentUser) return { type: 'dashboard' };
+    if (currentUser.role === 'staff') {
+      const first = companies[0];
+      const num = peekAndBumpCounter(first.prefix);
+      return { type: 'invoice', companyId: first.id, invoiceId: 'new', invoiceNumber: num };
+    }
+    return { type: 'dashboard' };
+  };
+
+  const [view, setView] = useState(getInitialView);
 
   if (!currentUser) return <Login />;
 
+  const isAdmin = currentUser.role === 'admin';
+
   return (
     <Layout view={view} setView={setView}>
-      {view.type === 'dashboard' && (
+      {view.type === 'dashboard' && isAdmin && (
         <Dashboard setView={setView} />
       )}
-      {view.type === 'company' && (
+      {view.type === 'company' && isAdmin && (
         <CompanyView
           key={view.companyId}
           companyId={view.companyId}
@@ -34,7 +49,7 @@ function AppInner() {
           setView={setView}
         />
       )}
-      {view.type === 'settings' && (
+      {view.type === 'settings' && isAdmin && (
         <CompanySettings
           key={view.companyId}
           companyId={view.companyId}

@@ -4,10 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Uses CSS variables set at runtime per active company.
+        // --accent and --accent-dark are space-separated RGB triplets (e.g. "30 136 229")
+        // so Tailwind's opacity modifiers like bg-accent/10 work correctly.
         accent: {
-          DEFAULT: '#1e88e5',
-          light: '#42a5f5',
-          dark: '#1565c0',
+          DEFAULT: 'rgb(var(--accent, 30 136 229) / <alpha-value>)',
+          dark:    'rgb(var(--accent-dark, 21 101 192) / <alpha-value>)',
+          light:   'rgb(var(--accent-light, 96 165 250) / <alpha-value>)',
         },
         brand: {
           DEFAULT: '#1a1b1c',
@@ -18,7 +21,8 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        invoice: '0 4px 40px rgba(0,0,0,0.12)',
+        invoice: '0 4px 40px rgba(0,0,0,0.08)',
+        card: '0 2px 12px rgba(0,0,0,0.06)',
       },
     },
   },
