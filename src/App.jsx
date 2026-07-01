@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import CompanyView from './components/CompanyView';
 import InvoiceEditor from './components/InvoiceEditor';
 import CompanySettings from './components/CompanySettings';
+import AccountSettings from './components/AccountSettings';
 
 function AppInner() {
   const { currentUser, companies, peekAndBumpCounter } = useApp();
@@ -55,6 +56,9 @@ function AppInner() {
           companyId={view.companyId}
           setView={setView}
         />
+      )}
+      {view.type === 'account' && isAdmin && (
+        <AccountSettings setView={setView} />
       )}
     </Layout>
   );

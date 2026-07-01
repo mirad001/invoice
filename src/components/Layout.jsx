@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Settings } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Layout({ children, view, setView }) {
@@ -58,8 +59,17 @@ export default function Layout({ children, view, setView }) {
           <span className="text-slate-400 text-xs ml-1">Invoice &amp; Approvals</span>
         </div>
         <div className="flex-1" />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <span className="text-sm text-slate-400">{userRole} · {userName}</span>
+          {isAdmin && (
+            <button
+              onClick={() => setView({ type: 'account' })}
+              title="Account Settings"
+              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            >
+              <Settings size={15} />
+            </button>
+          )}
           <button
             onClick={logout}
             className="text-sm font-medium bg-brand-light hover:bg-white/10 text-white px-3 py-1.5 rounded-lg transition-colors"

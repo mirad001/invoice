@@ -1,7 +1,9 @@
-// PIN is 4 digits.
-// Admin: full access (records, reports, settings, invoices).
-// Staff: create and download invoices only — no records, reports or settings.
-export const USERS = [
-  { id: 'admin', name: 'Admin', pin: '0000', role: 'admin' },
-  { id: 'staff', name: 'Staff', pin: '1234', role: 'staff' },
-];
+// Admin logs in with email + password (stored in localStorage, changeable).
+// Staff logs in with a fixed 4-digit PIN.
+export const DEFAULT_ADMIN = {
+  email: 'admin@bondcleaning.com.au',
+  password: 'Admin@1234',
+  recoveryCode: 'BOND-RESET-2024',
+};
+
+export const STAFF_PIN = '1234';
