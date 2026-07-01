@@ -200,7 +200,7 @@ export default function Login() {
                     type="email"
                     value={email}
                     onChange={e => { setEmail(e.target.value); setLoginErr(''); }}
-                    placeholder="admin@bondcleaning.com.au"
+                    placeholder="leadsmonitor24@gmail.com"
                     autoComplete="email"
                     className="w-full pl-9 pr-4 py-3 bg-brand-light border border-white/10 hover:border-white/20 focus:border-accent outline-none rounded-xl text-white text-sm placeholder-slate-600 transition-all"
                   />
