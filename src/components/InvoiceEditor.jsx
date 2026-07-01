@@ -9,13 +9,129 @@ import { DEFAULT_LINE_ITEMS } from '../config/companies';
 import Stamp from './Stamp';
 import SignaturePanel from './SignaturePanel';
 
-function ContactRow({ letter, value }) {
+// ─── Per-company invoice visual themes ───────────────────────────────────────
+const THEMES = {
+  // BCB — dark charcoal header, blue accents, sharp-ish corners
+  corporate: {
+    darkHeader: true,
+    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0',
+    headerCls: 'bg-brand px-7 pt-7 pb-6',
+    logoMark: 'text-accent font-black text-base leading-none',
+    coName: 'text-white text-lg font-bold tracking-tight',
+    badge: 'w-5 h-5 rounded bg-white/15 flex items-center justify-center text-[10px] font-bold text-slate-300 flex-shrink-0',
+    badgeText: 'text-slate-400 text-xs',
+    invoiceWord: 'text-accent text-3xl font-black tracking-widest mb-4',
+    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5',
+    metaVal: 'text-slate-300 text-xs font-mono font-semibold',
+    input: 'bg-transparent border border-transparent hover:border-white/30 focus:border-accent focus:bg-white/10 outline-none rounded px-1 py-0.5 text-slate-300 text-xs transition-colors w-full placeholder-slate-600',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2',
+    box: 'border border-slate-200 rounded-lg p-3 min-h-[90px]',
+    theadRow: 'border-b-2 border-slate-900',
+    theadTh: 'text-slate-500',
+    grandTotal: 'text-accent',
+    statsTotal: 'text-accent',
+    paidText: 'text-emerald-400',
+    pendingText: 'text-amber-300',
+  },
+
+  // BCA — warm amber gradient, bold black typography
+  bold: {
+    darkHeader: true,
+    docCls: 'flex-1 bg-white rounded-xl shadow-invoice overflow-hidden relative min-w-0 border-t-4 border-amber-400',
+    headerCls: 'bg-gradient-to-br from-amber-400 to-orange-500 px-7 pt-7 pb-6',
+    logoMark: 'text-white font-black text-xl leading-none',
+    coName: 'text-white text-xl font-black tracking-tight',
+    badge: 'w-6 h-6 rounded-lg bg-black/15 flex items-center justify-center text-[10px] font-bold text-white/90 flex-shrink-0',
+    badgeText: 'text-white/75 text-xs',
+    invoiceWord: 'text-white text-4xl font-black tracking-widest mb-4',
+    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-white/55 mb-0.5',
+    metaVal: 'text-white text-xs font-bold',
+    input: 'bg-white/15 border border-white/25 hover:border-white/50 focus:border-white focus:bg-white/20 outline-none rounded-lg px-2 py-0.5 text-white text-xs transition-colors w-full placeholder-white/40',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-2',
+    box: 'border-2 border-amber-200 rounded-xl p-3 min-h-[90px] bg-amber-50/60',
+    theadRow: 'border-b-[3px] border-amber-400',
+    theadTh: 'text-amber-700',
+    grandTotal: 'text-amber-600',
+    statsTotal: 'text-amber-500',
+    paidText: 'text-emerald-200',
+    pendingText: 'text-white',
+  },
+
+  // SBC — light green header, very clean & rounded, fresh modern look
+  modern: {
+    darkHeader: false,
+    docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0',
+    headerCls: 'bg-gradient-to-br from-emerald-50 to-teal-50 border-b-4 border-emerald-500 px-7 pt-7 pb-6',
+    logoMark: 'text-emerald-600 font-black text-lg leading-none',
+    coName: 'text-slate-800 text-lg font-bold tracking-tight',
+    badge: 'w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-700 flex-shrink-0',
+    badgeText: 'text-slate-500 text-xs',
+    invoiceWord: 'text-emerald-600 text-3xl font-black tracking-[0.2em] mb-4',
+    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5',
+    metaVal: 'text-slate-700 text-xs font-mono font-semibold',
+    input: 'bg-white border border-emerald-200 hover:border-emerald-400 focus:border-emerald-600 outline-none rounded-xl px-2 py-0.5 text-slate-700 text-xs transition-colors w-full placeholder-slate-300',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-2',
+    box: 'border border-emerald-100 rounded-2xl p-3 min-h-[90px] bg-emerald-50/30',
+    theadRow: 'border-b-2 border-emerald-500',
+    theadTh: 'text-emerald-700',
+    grandTotal: 'text-emerald-600',
+    statsTotal: 'text-emerald-500',
+    paidText: 'text-emerald-700',
+    pendingText: 'text-amber-600',
+  },
+
+  // SSS — deep purple gradient, spaced-out letterforms, luxury feel
+  premium: {
+    darkHeader: true,
+    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-violet-100',
+    headerCls: 'bg-gradient-to-br from-violet-900 to-purple-800 px-7 pt-8 pb-7',
+    logoMark: 'text-purple-300 font-semibold text-base leading-none',
+    coName: 'text-white text-lg font-semibold tracking-[0.1em]',
+    badge: 'w-5 h-5 rounded bg-purple-800/60 flex items-center justify-center text-[10px] font-bold text-purple-200 flex-shrink-0',
+    badgeText: 'text-purple-200/80 text-xs',
+    invoiceWord: 'text-purple-200 text-3xl font-light tracking-[0.5em] mb-4',
+    metaLabel: 'text-[9px] font-semibold uppercase tracking-[0.15em] text-purple-400 mb-0.5',
+    metaVal: 'text-purple-100 text-xs font-mono',
+    input: 'bg-white/5 border border-purple-700 hover:border-purple-400 focus:border-purple-300 focus:bg-white/10 outline-none rounded px-1 py-0.5 text-white text-xs transition-colors w-full placeholder-purple-500',
+    sectionLabel: 'text-[10px] font-semibold uppercase tracking-widest text-violet-400 mb-2',
+    box: 'border border-violet-100 rounded-xl p-3 min-h-[90px] bg-violet-50/40',
+    theadRow: 'border-b border-violet-200',
+    theadTh: 'text-violet-400',
+    grandTotal: 'text-violet-700',
+    statsTotal: 'text-violet-500',
+    paidText: 'text-emerald-300',
+    pendingText: 'text-amber-200',
+  },
+
+  // MBC — solid teal header, fully rounded everywhere, warm & welcoming
+  friendly: {
+    darkHeader: true,
+    docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0',
+    headerCls: 'bg-teal-500 px-7 pt-8 pb-8',
+    logoMark: 'text-white/60 font-black text-lg leading-none',
+    coName: 'text-white text-lg font-bold',
+    badge: 'w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0',
+    badgeText: 'text-teal-100 text-xs',
+    invoiceWord: 'text-white text-4xl font-bold tracking-wide mb-4',
+    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-teal-200 mb-0.5',
+    metaVal: 'text-white text-xs font-semibold',
+    input: 'bg-white/15 border border-white/25 hover:border-white/50 focus:border-white focus:bg-white/20 outline-none rounded-full px-2 py-0.5 text-white text-xs transition-colors w-full placeholder-teal-200',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-teal-500 mb-2',
+    box: 'border border-teal-100 rounded-2xl p-3 min-h-[90px] bg-teal-50/50',
+    theadRow: 'border-b-2 border-teal-300',
+    theadTh: 'text-teal-600',
+    grandTotal: 'text-teal-600',
+    statsTotal: 'text-teal-500',
+    paidText: 'text-emerald-200',
+    pendingText: 'text-amber-200',
+  },
+};
+
+function ContactRow({ letter, value, t }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-5 h-5 rounded bg-white/15 flex items-center justify-center text-[10px] font-bold text-slate-300 flex-shrink-0">
-        {letter}
-      </span>
-      <span className="text-slate-400 text-xs">{value}</span>
+      <span className={t.badge}>{letter}</span>
+      <span className={t.badgeText}>{value}</span>
     </div>
   );
 }
@@ -57,6 +173,8 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
   const company = companies.find(c => c.id === companyId);
   const invoiceRef = useRef(null);
   const isNew = invoiceId === 'new';
+
+  const t = THEMES[company?.theme || 'corporate'];
 
   const [invoice, setInvoice] = useState(() =>
     isNew
@@ -173,7 +291,6 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
 
-      // Hide edit-only elements before capturing
       const noPrintEls = invoiceRef.current.querySelectorAll('.no-print');
       noPrintEls.forEach(el => { el.dataset.prevDisplay = el.style.display; el.style.display = 'none'; });
 
@@ -184,7 +301,6 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
         backgroundColor: '#ffffff',
       });
 
-      // Restore hidden elements
       noPrintEls.forEach(el => { el.style.display = el.dataset.prevDisplay || ''; });
 
       const img = canvas.toDataURL('image/png');
@@ -193,7 +309,6 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       const pageH = pdf.internal.pageSize.getHeight();
       const imgH = (canvas.height * pageW) / canvas.width;
 
-      // Split across pages if content is taller than one A4 page
       let y = 0;
       while (y < imgH) {
         if (y > 0) pdf.addPage();
@@ -218,7 +333,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
   return (
     <div className="min-h-full bg-slate-100">
-      {/* Slim print/utility bar */}
+      {/* Slim utility bar */}
       <div className="no-print flex items-center gap-2 px-4 py-2 bg-white border-b border-slate-100">
         <div className="flex-1 flex items-center gap-1.5">
           {saveMsg ? (
@@ -238,50 +353,47 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
         </button>
       </div>
 
-      {/* Two-column layout: invoice + right panel */}
+      {/* Two-column layout */}
       <div className="flex gap-0 px-4 py-6 max-w-6xl mx-auto items-start">
 
         {/* ── INVOICE DOCUMENT ── */}
-        <div
-          id="invoice-doc"
-          ref={invoiceRef}
-          className="flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0"
-        >
+        <div id="invoice-doc" ref={invoiceRef} className={t.docCls}>
+
           {/* ─── HEADER ─── */}
-          <div className="bg-brand px-7 pt-7 pb-6">
+          <div className={t.headerCls}>
             <div className="flex items-start justify-between gap-6">
 
               {/* Left: logo + contact */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-accent font-black text-base leading-none">//</span>
-                  <h1 className="text-white text-lg font-bold tracking-tight">{company.name}</h1>
+                  <span className={t.logoMark}>//</span>
+                  <h1 className={t.coName}>{company.name}</h1>
                 </div>
                 <div className="space-y-1.5">
-                  <ContactRow letter="A" value={company.address} />
-                  <ContactRow letter="P" value={company.phone} />
-                  <ContactRow letter="E" value={company.email} />
-                  <ContactRow letter="W" value={company.website} />
+                  <ContactRow letter="A" value={company.address} t={t} />
+                  <ContactRow letter="P" value={company.phone} t={t} />
+                  <ContactRow letter="E" value={company.email} t={t} />
+                  <ContactRow letter="W" value={company.website} t={t} />
                 </div>
               </div>
 
               {/* Right: INVOICE + meta */}
               <div className="flex-shrink-0 text-right">
-                <div className="text-[#1e88e5] text-3xl font-black tracking-widest mb-4">INVOICE</div>
+                <div className={t.invoiceWord}>INVOICE</div>
 
                 <div className="space-y-3 text-left min-w-[200px]">
                   {/* Invoice # */}
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Invoice #</div>
-                    <div className="text-slate-300 text-xs font-mono font-semibold">{invoice.invoiceNumber}</div>
+                    <div className={t.metaLabel}>Invoice #</div>
+                    <div className={t.metaVal}>{invoice.invoiceNumber}</div>
                   </div>
 
                   {/* Date */}
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Date</div>
+                    <div className={t.metaLabel}>Date</div>
                     <input
                       type="date"
-                      className="bg-transparent border border-transparent hover:border-white/30 focus:border-accent focus:bg-white/10 outline-none rounded px-1 py-0.5 text-slate-300 text-xs transition-colors w-full"
+                      className={t.input}
                       value={invoice.date}
                       onChange={e => upd({ date: e.target.value })}
                     />
@@ -289,7 +401,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
                   {/* Status toggle */}
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1">Status</div>
+                    <div className={t.metaLabel}>Status</div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={toggleStatus}
@@ -297,7 +409,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                       >
                         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 ${isPaid ? 'translate-x-6' : 'translate-x-0.5'}`} />
                       </button>
-                      <span className={`text-xs font-bold ${isPaid ? 'text-emerald-400' : 'text-amber-300'}`}>
+                      <span className={`text-xs font-bold ${isPaid ? t.paidText : t.pendingText}`}>
                         {isPaid ? 'PAID' : 'PENDING'}
                       </span>
                     </div>
@@ -305,9 +417,9 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
                   {/* Service ID */}
                   <div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Service ID</div>
+                    <div className={t.metaLabel}>Service ID</div>
                     <input
-                      className="bg-transparent border border-transparent hover:border-white/30 focus:border-accent focus:bg-white/10 outline-none rounded px-1 py-0.5 text-slate-300 text-xs transition-colors w-full placeholder-slate-600"
+                      className={t.input}
                       placeholder="—"
                       value={invoice.serviceId || ''}
                       onChange={e => upd({ serviceId: e.target.value })}
@@ -318,14 +430,11 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
             </div>
           </div>
 
-          {/* ─── CUSTOMER / PROPERTY BOXES ─── */}
+          {/* ─── CUSTOMER / BANK BOXES ─── */}
           <div className="px-7 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Customer details */}
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                Customer details
-              </div>
-              <div className="border border-slate-200 rounded-lg p-3 min-h-[90px]">
+              <div className={t.sectionLabel}>Customer details</div>
+              <div className={t.box}>
                 <textarea
                   className="inv-textarea h-20"
                   placeholder="Name, address, contact..."
@@ -343,12 +452,9 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               </div>
             </div>
 
-            {/* Bank Details — pre-filled per company, editable */}
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                Bank Details
-              </div>
-              <div className="border border-slate-200 rounded-lg p-3 min-h-[90px]">
+              <div className={t.sectionLabel}>Bank Details</div>
+              <div className={t.box}>
                 <textarea
                   className="inv-textarea h-20"
                   placeholder="Account Name&#10;BSB&#10;Account No"
@@ -359,19 +465,19 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
             </div>
           </div>
 
-          {/* PENDING / PAID stamp — positioned relative to invoice doc */}
+          {/* Stamp — positioned relative to invoice doc */}
           <Stamp status={invoice.status} />
 
           {/* ─── LINE ITEMS ─── */}
           <div className="px-7 pb-2">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="text-left pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-1/2">Description</th>
-                  <th className="text-center pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-14">Qty</th>
-                  <th className="text-center pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-6">$</th>
-                  <th className="text-right pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-24">Unit Price</th>
-                  <th className="text-right pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 w-24">Total</th>
+                <tr className={t.theadRow}>
+                  <th className={`text-left pb-2 text-[10px] font-bold uppercase tracking-widest w-1/2 ${t.theadTh}`}>Description</th>
+                  <th className={`text-center pb-2 text-[10px] font-bold uppercase tracking-widest w-14 ${t.theadTh}`}>Qty</th>
+                  <th className={`text-center pb-2 text-[10px] font-bold uppercase tracking-widest w-6 ${t.theadTh}`}>$</th>
+                  <th className={`text-right pb-2 text-[10px] font-bold uppercase tracking-widest w-24 ${t.theadTh}`}>Unit Price</th>
+                  <th className={`text-right pb-2 text-[10px] font-bold uppercase tracking-widest w-24 ${t.theadTh}`}>Total</th>
                   <th className="w-7 no-print" />
                 </tr>
               </thead>
@@ -459,14 +565,14 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               </div>
               <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
                 <span>Total (AUD)</span>
-                <span className="text-[#1e88e5]">{formatCurrency(invoice.grandTotal)}</span>
+                <span className={t.grandTotal}>{formatCurrency(invoice.grandTotal)}</span>
               </div>
             </div>
           </div>
 
           {/* ─── NOTES ─── */}
           <div className="px-7 pb-6">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Notes</div>
+            <div className={t.sectionLabel}>Notes</div>
             <textarea
               className="inv-textarea h-16 text-xs"
               placeholder="Payment instructions, terms, or notes…"
@@ -483,7 +589,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
               {company.name.toUpperCase()}
             </div>
-            <div className="text-3xl font-black text-[#1e88e5] leading-none mb-0.5">
+            <div className={`text-3xl font-black leading-none mb-0.5 ${t.statsTotal}`}>
               {formatCurrency(monthTotal)}
             </div>
             <div className="text-xs text-slate-400 font-medium mb-4">THIS MONTH</div>
