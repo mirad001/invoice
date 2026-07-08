@@ -2,7 +2,7 @@
 // Staff logs in with a fixed 4-digit PIN.
 export const DEFAULT_ADMIN = {
   email: 'leadsmonitor24@gmail.com',
-  password: 'LeadMonitor',
+  password: '@SonaliBunty30',
   recoveryCode: 'BOND-RESET-2024',
 };
 
