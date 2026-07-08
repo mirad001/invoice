@@ -291,17 +291,38 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
 
-      const noPrintEls = invoiceRef.current.querySelectorAll('.no-print');
-      noPrintEls.forEach(el => { el.dataset.prevDisplay = el.style.display; el.style.display = 'none'; });
+      // html2canvas can't render <input>/<textarea> values reliably (text renders
+      // clipped/cropped), so capture a detached static copy with fields swapped
+      // for plain text instead of the live editable DOM.
+      await document.fonts.ready;
 
-      const canvas = await html2canvas(invoiceRef.current, {
+      const clone = invoiceRef.current.cloneNode(true);
+      const liveFields = invoiceRef.current.querySelectorAll('input, textarea');
+      const cloneFields = clone.querySelectorAll('input, textarea');
+      cloneFields.forEach((field, i) => {
+        const replacement = document.createElement('div');
+        replacement.className = field.className;
+        replacement.style.whiteSpace = field.tagName === 'TEXTAREA' ? 'pre-wrap' : 'nowrap';
+        replacement.style.overflow = 'hidden';
+        replacement.textContent = liveFields[i].value;
+        field.replaceWith(replacement);
+      });
+      clone.querySelectorAll('.no-print').forEach(el => el.remove());
+
+      clone.style.position = 'fixed';
+      clone.style.top = '0';
+      clone.style.left = '-9999px';
+      clone.style.margin = '0';
+      document.body.appendChild(clone);
+
+      const canvas = await html2canvas(clone, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
       });
 
-      noPrintEls.forEach(el => { el.style.display = el.dataset.prevDisplay || ''; });
+      document.body.removeChild(clone);
 
       const img = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
