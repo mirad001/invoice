@@ -68,6 +68,7 @@
   #invoice-doc {
     box-shadow: none !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     margin: 0 !important;
   }
   .inv-field, .inv-textarea {

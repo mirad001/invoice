@@ -354,10 +354,13 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       </div>
 
       {/* Two-column layout */}
-      <div className="flex gap-0 px-4 py-6 max-w-6xl mx-auto items-start">
+      <div className="flex flex-col lg:flex-row gap-0 px-4 py-6 max-w-6xl mx-auto items-start">
 
         {/* ── INVOICE DOCUMENT ── */}
-        <div id="invoice-doc" ref={invoiceRef} className={t.docCls}>
+        {/* Fixed-format document: scrolls horizontally on narrow screens instead of
+            squeezing its columns, which was clipping words out of line-item/customer fields. */}
+        <div className="w-full overflow-x-auto">
+          <div id="invoice-doc" ref={invoiceRef} className={`${t.docCls} min-w-[640px]`}>
 
           {/* ─── HEADER ─── */}
           <div className={t.headerCls}>
@@ -580,10 +583,11 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               onChange={e => upd({ notes: e.target.value })}
             />
           </div>
+          </div>
         </div>
 
         {/* ── RIGHT PANEL ── */}
-        <div className="no-print w-72 ml-4 flex-shrink-0 space-y-4">
+        <div className="no-print w-full lg:w-72 mt-4 lg:mt-0 lg:ml-4 flex-shrink-0 space-y-4">
           {/* Company stats */}
           <div className="bg-white rounded-2xl shadow-invoice p-5">
             <div className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">
