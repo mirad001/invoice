@@ -128,6 +128,7 @@ const THEMES = {
 };
 
 function ContactRow({ letter, value, t }) {
+  if (!value) return null;
   return (
     <div className="flex items-center gap-2">
       <span className={t.badge}>{letter}</span>
@@ -300,11 +301,19 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       const liveFields = invoiceRef.current.querySelectorAll('input, textarea');
       const cloneFields = clone.querySelectorAll('input, textarea');
       cloneFields.forEach((field, i) => {
+        const liveField = liveFields[i];
         const replacement = document.createElement('div');
         replacement.className = field.className;
         replacement.style.whiteSpace = field.tagName === 'TEXTAREA' ? 'pre-wrap' : 'nowrap';
         replacement.style.overflow = 'hidden';
-        replacement.textContent = liveFields[i].value;
+        // Native date inputs display as DD/MM/YYYY on screen, but .value is
+        // always ISO (YYYY-MM-DD) — reformat so the export matches what's shown.
+        if (liveField.type === 'date' && liveField.value) {
+          const [yyyy, mm, dd] = liveField.value.split('-');
+          replacement.textContent = `${dd}/${mm}/${yyyy}`;
+        } else {
+          replacement.textContent = liveField.value;
+        }
         field.replaceWith(replacement);
       });
       clone.querySelectorAll('.no-print').forEach(el => el.remove());
@@ -328,14 +337,19 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgH = (canvas.height * pageW) / canvas.width;
 
-      let y = 0;
-      while (y < imgH) {
-        if (y > 0) pdf.addPage();
-        pdf.addImage(img, 'PNG', 0, -y, pageW, imgH);
-        y += pageH;
+      // Always fit on a single page — scale the whole invoice down rather
+      // than splitting it across pages, which broke the layout on page 2.
+      const imgRatio = canvas.height / canvas.width;
+      let drawW = pageW;
+      let drawH = drawW * imgRatio;
+      if (drawH > pageH) {
+        drawH = pageH;
+        drawW = drawH / imgRatio;
       }
+      const x = (pageW - drawW) / 2;
+      const y = (pageH - drawH) / 2;
+      pdf.addImage(img, 'PNG', x, y, drawW, drawH);
 
       pdf.save(`${invoice.invoiceNumber}.pdf`);
     } catch (e) {
@@ -409,7 +423,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                   {/* Invoice # */}
                   <div>
                     <div className={t.metaLabel}>Invoice #</div>
-                    <div className={t.metaVal}>{invoice.invoiceNumber}</div>
+                    <div className={`${t.metaVal} h-6 flex items-center`}>{invoice.invoiceNumber}</div>
                   </div>
 
                   {/* Date */}
@@ -417,7 +431,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                     <div className={t.metaLabel}>Date</div>
                     <input
                       type="date"
-                      className={t.input}
+                      className={`${t.input} h-6`}
                       value={invoice.date}
                       onChange={e => upd({ date: e.target.value })}
                     />
@@ -426,14 +440,14 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                   {/* Status toggle */}
                   <div>
                     <div className={t.metaLabel}>Status</div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 h-6">
                       <button
                         onClick={toggleStatus}
                         className={`relative flex items-center h-6 w-12 rounded-full transition-colors duration-300 flex-shrink-0 ${isPaid ? 'bg-emerald-500' : 'bg-amber-400'}`}
                       >
                         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 ${isPaid ? 'translate-x-6' : 'translate-x-0.5'}`} />
                       </button>
-                      <span className={`text-xs font-bold ${isPaid ? t.paidText : t.pendingText}`}>
+                      <span className={`text-xs font-bold leading-none ${isPaid ? t.paidText : t.pendingText}`}>
                         {isPaid ? 'PAID' : 'PENDING'}
                       </span>
                     </div>
@@ -443,7 +457,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                   <div>
                     <div className={t.metaLabel}>Service ID</div>
                     <input
-                      className={t.input}
+                      className={`${t.input} h-6`}
                       placeholder="—"
                       value={invoice.serviceId || ''}
                       onChange={e => upd({ serviceId: e.target.value })}
