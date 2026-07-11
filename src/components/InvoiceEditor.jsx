@@ -264,13 +264,20 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       // html2canvas can't render <input>/<textarea> values reliably (text renders
       // clipped/cropped), so capture a detached static copy with fields swapped
       // for plain text instead of the live editable DOM.
-      await document.fonts.ready;
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
 
       const clone = invoiceRef.current.cloneNode(true);
+      // Clone still carries id="invoice-doc" — remove it so there's never a
+      // duplicate id in the document while the live and cloned trees coexist.
+      clone.removeAttribute('id');
+
       const liveFields = invoiceRef.current.querySelectorAll('input, textarea');
       const cloneFields = clone.querySelectorAll('input, textarea');
       cloneFields.forEach((field, i) => {
         const liveField = liveFields[i];
+        if (!liveField) return;
         const replacement = document.createElement('div');
         replacement.className = field.className;
         replacement.style.whiteSpace = field.tagName === 'TEXTAREA' ? 'pre-wrap' : 'nowrap';
@@ -293,14 +300,17 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
       clone.style.margin = '0';
       document.body.appendChild(clone);
 
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      document.body.removeChild(clone);
+      let canvas;
+      try {
+        canvas = await html2canvas(clone, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+        });
+      } finally {
+        clone.remove();
+      }
 
       const img = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -322,8 +332,8 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
       pdf.save(`${invoice.invoiceNumber}.pdf`);
     } catch (e) {
-      console.error(e);
-      alert('PDF export failed. Try printing instead.');
+      console.error('PDF export failed:', e);
+      alert(`PDF export failed: ${e?.message || 'unknown error'}. Try printing instead, and let support know the message above.`);
     } finally {
       setPdfLoading(false);
     }
