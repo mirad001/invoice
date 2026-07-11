@@ -388,44 +388,46 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               <div className="flex-shrink-0 text-right">
                 <div className={t.invoiceWord}>INVOICE</div>
 
-                {/* Grid guarantees each field its own row/column — never overlaps,
-                    regardless of content length or native input chrome height. */}
-                <div className="grid grid-cols-2 gap-x-5 gap-y-3 text-left min-w-[220px]">
+                {/* Plain flex stacking (not CSS grid — html2canvas renders grid
+                    unreliably) with min-height instead of forced height, so
+                    rows can never overlap regardless of native input chrome. */}
+                <div className="flex flex-col gap-3 text-left min-w-[220px]">
                   {/* Invoice # — full width, primary identifier */}
-                  <div className="col-span-2">
+                  <div>
                     <div className={t.metaLabel}>Invoice #</div>
                     <div className={`${t.metaVal} min-h-[34px] flex items-center`}>{invoice.invoiceNumber}</div>
                   </div>
 
-                  {/* Date */}
-                  <div>
-                    <div className={t.metaLabel}>Date</div>
-                    <input
-                      type="date"
-                      className={`${t.input} min-h-[34px]`}
-                      value={invoice.date}
-                      onChange={e => upd({ date: e.target.value })}
-                    />
-                  </div>
+                  {/* Date + Status — side by side */}
+                  <div className="flex gap-5">
+                    <div className="flex-1">
+                      <div className={t.metaLabel}>Date</div>
+                      <input
+                        type="date"
+                        className={`${t.input} min-h-[34px]`}
+                        value={invoice.date}
+                        onChange={e => upd({ date: e.target.value })}
+                      />
+                    </div>
 
-                  {/* Status toggle — horizontally aligned with Date */}
-                  <div>
-                    <div className={t.metaLabel}>Status</div>
-                    <div className="flex items-center gap-2 min-h-[34px]">
-                      <button
-                        onClick={toggleStatus}
-                        className={`relative flex items-center h-6 w-12 rounded-full transition-colors duration-300 flex-shrink-0 ${isPaid ? 'bg-emerald-500' : 'bg-amber-400'}`}
-                      >
-                        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 ${isPaid ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                      </button>
-                      <span className={`text-xs font-bold leading-none whitespace-nowrap ${isPaid ? t.paidText : t.pendingText}`}>
-                        {isPaid ? 'PAID' : 'UNPAID'}
-                      </span>
+                    <div className="flex-1">
+                      <div className={t.metaLabel}>Status</div>
+                      <div className="flex items-center gap-2 min-h-[34px]">
+                        <button
+                          onClick={toggleStatus}
+                          className={`relative flex items-center h-6 w-12 rounded-full transition-colors duration-300 flex-shrink-0 ${isPaid ? 'bg-emerald-500' : 'bg-amber-400'}`}
+                        >
+                          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 ${isPaid ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                        </button>
+                        <span className={`text-xs font-bold leading-none whitespace-nowrap ${isPaid ? t.paidText : t.pendingText}`}>
+                          {isPaid ? 'PAID' : 'UNPAID'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Service ID — full width */}
-                  <div className="col-span-2">
+                  <div>
                     <div className={t.metaLabel}>Service ID</div>
                     <input
                       className={`${t.input} min-h-[34px]`}
