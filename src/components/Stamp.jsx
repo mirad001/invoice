@@ -15,7 +15,7 @@ export default function Stamp({ status }) {
           style={{ rotate: isPaid ? 7 : -9 }}
           className={`stamp-box ${isPaid ? 'stamp-paid' : 'stamp-pending'}`}
         >
-          {isPaid ? 'PAID' : 'PENDING'}
+          {isPaid ? 'PAID' : 'UNPAID'}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -11,7 +11,7 @@ export const DEFAULT_COMPANIES = [
     accentRgb: '30 136 229',
     accentDarkRgb: '21 101 192',
     bankDetails: 'Account Name: Bond Cleaners in Brisbane\nBSB: TBC\nAccount No: TBC',
-    theme: 'corporate',
+    invoiceTemplate: 'minimal',
   },
   {
     id: 'BCA',
@@ -24,7 +24,7 @@ export const DEFAULT_COMPANIES = [
     accentRgb: '249 154 31',
     accentDarkRgb: '220 130 10',
     bankDetails: 'Account Name: Bond Cleaners Australia\nBSB: TBC\nAccount No: TBC',
-    theme: 'bold',
+    invoiceTemplate: 'corporate',
   },
   {
     id: 'SBC',
@@ -37,7 +37,7 @@ export const DEFAULT_COMPANIES = [
     accentRgb: '34 197 94',
     accentDarkRgb: '22 163 74',
     bankDetails: 'Account Name: Shine Bond Clean\nBSB: TBC\nAccount No: TBC',
-    theme: 'modern',
+    invoiceTemplate: 'soft',
   },
   {
     id: 'SSS',
@@ -50,7 +50,7 @@ export const DEFAULT_COMPANIES = [
     accentRgb: '139 92 246',
     accentDarkRgb: '124 58 237',
     bankDetails: 'Account Name: SSS OZ Cleaning\nBSB: TBC\nAccount No: TBC',
-    theme: 'premium',
+    invoiceTemplate: 'minimal',
   },
   {
     id: 'MBC',
@@ -63,7 +63,7 @@ export const DEFAULT_COMPANIES = [
     accentRgb: '20 184 166',
     accentDarkRgb: '13 148 136',
     bankDetails: 'Account Name: Mama Bond Cleaners\nBSB: TBC\nAccount No: TBC',
-    theme: 'friendly',
+    invoiceTemplate: 'corporate',
   },
 ];
 

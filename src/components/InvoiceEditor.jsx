@@ -9,123 +9,92 @@ import { DEFAULT_LINE_ITEMS } from '../config/companies';
 import Stamp from './Stamp';
 import SignaturePanel from './SignaturePanel';
 
-// ─── Per-company invoice visual themes ───────────────────────────────────────
-const THEMES = {
-  // BCB — dark charcoal header, blue accents, sharp-ish corners
-  corporate: {
-    darkHeader: true,
+// ─── Invoice templates ────────────────────────────────────────────────────
+// Three curated designs. Every company picks one (persisted per-company via
+// company.invoiceTemplate) instead of getting a fixed look. Each accents with
+// the company's own --accent colour; only the neutral/background differs.
+export const TEMPLATES = {
+  minimal: {
+    name: 'Modern Minimal',
+    description: 'White header, thin rule, generous whitespace',
+    swatchCls: 'bg-white border border-slate-200',
+    darkHeader: false,
     docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-brand px-7 pt-7 pb-6',
-    logoMark: 'text-accent font-black text-base leading-none',
-    coName: 'text-white text-lg font-bold tracking-tight',
-    badge: 'w-5 h-5 rounded bg-white/15 flex items-center justify-center text-[10px] font-bold text-slate-300 flex-shrink-0',
-    badgeText: 'text-slate-400 text-xs',
-    invoiceWord: 'text-accent text-3xl font-black tracking-widest mb-4',
-    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5',
-    metaVal: 'text-slate-300 text-xs font-mono font-semibold',
-    input: 'bg-transparent border border-transparent hover:border-white/30 focus:border-accent focus:bg-white/10 outline-none rounded px-1 py-0.5 text-slate-300 text-xs transition-colors w-full placeholder-slate-600',
+    headerCls: 'bg-white px-8 pt-8 pb-6 border-b border-slate-200',
+    logoMark: 'text-accent font-bold text-sm leading-none',
+    coName: 'text-slate-900 text-xl font-bold tracking-tight',
+    badge: 'w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 flex-shrink-0',
+    badgeText: 'text-slate-500 text-xs',
+    invoiceWord: 'text-accent text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
+    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1',
+    metaVal: 'text-slate-800 text-sm font-semibold',
+    input: 'bg-slate-50 border border-slate-200 hover:border-accent/50 focus:border-accent focus:bg-white outline-none rounded-lg px-2.5 py-1.5 text-slate-800 text-sm transition-colors w-full placeholder-slate-300',
     sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2',
-    box: 'border border-slate-200 rounded-lg p-3 min-h-[90px]',
-    theadRow: 'border-b-2 border-slate-900',
+    box: 'border border-slate-200 rounded-xl p-4 min-h-[90px] bg-slate-50/50',
+    theadRow: 'border-b-2 border-slate-800',
     theadTh: 'text-slate-500',
     grandTotal: 'text-accent',
     statsTotal: 'text-accent',
-    paidText: 'text-emerald-400',
-    pendingText: 'text-amber-300',
-  },
-
-  // BCA — #f99a1f header, bold black text throughout
-  bold: {
-    darkHeader: false,
-    docCls: 'flex-1 bg-white rounded-xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-[#f99a1f] px-7 pt-7 pb-6',
-    logoMark: 'text-black font-black text-xl leading-none',
-    coName: 'text-black text-xl font-black tracking-tight',
-    badge: 'w-6 h-6 rounded-lg bg-black flex items-center justify-center text-[10px] font-bold text-[#f99a1f] flex-shrink-0',
-    badgeText: 'text-black/80 text-xs font-medium',
-    invoiceWord: 'text-black text-4xl font-black tracking-widest mb-4',
-    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-black/50 mb-0.5',
-    metaVal: 'text-black text-xs font-bold',
-    input: 'bg-black/10 border border-black/25 hover:border-black/50 focus:border-black focus:bg-black/10 outline-none rounded-lg px-2 py-0.5 text-black text-xs transition-colors w-full placeholder-black/35',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-[#f99a1f] mb-2',
-    box: 'border-2 border-[#f99a1f] rounded-xl p-3 min-h-[90px] bg-[#f99a1f]/5',
-    theadRow: 'border-b-[3px] border-black',
-    theadTh: 'text-black',
-    grandTotal: 'text-black',
-    statsTotal: 'text-[#f99a1f]',
-    paidText: 'text-green-800',
-    pendingText: 'text-black',
-  },
-
-  // SBC — light green header, very clean & rounded, fresh modern look
-  modern: {
-    darkHeader: false,
-    docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-gradient-to-br from-emerald-50 to-teal-50 border-b-4 border-emerald-500 px-7 pt-7 pb-6',
-    logoMark: 'text-emerald-600 font-black text-lg leading-none',
-    coName: 'text-slate-800 text-lg font-bold tracking-tight',
-    badge: 'w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-700 flex-shrink-0',
-    badgeText: 'text-slate-500 text-xs',
-    invoiceWord: 'text-emerald-600 text-3xl font-black tracking-[0.2em] mb-4',
-    metaLabel: 'text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5',
-    metaVal: 'text-slate-700 text-xs font-mono font-semibold',
-    input: 'bg-white border border-emerald-200 hover:border-emerald-400 focus:border-emerald-600 outline-none rounded-xl px-2 py-0.5 text-slate-700 text-xs transition-colors w-full placeholder-slate-300',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-2',
-    box: 'border border-emerald-100 rounded-2xl p-3 min-h-[90px] bg-emerald-50/30',
-    theadRow: 'border-b-2 border-emerald-500',
-    theadTh: 'text-emerald-700',
-    grandTotal: 'text-emerald-600',
-    statsTotal: 'text-emerald-500',
-    paidText: 'text-emerald-700',
+    paidText: 'text-emerald-600',
     pendingText: 'text-amber-600',
   },
 
-  // SSS — deep purple gradient, spaced-out letterforms, luxury feel
-  premium: {
+  corporate: {
+    name: 'Bold Corporate',
+    description: 'Solid dark-neutral header, confident and formal',
+    swatchCls: 'bg-brand',
     darkHeader: true,
-    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-violet-100',
-    headerCls: 'bg-gradient-to-br from-violet-900 to-purple-800 px-7 pt-8 pb-7',
-    logoMark: 'text-purple-300 font-semibold text-base leading-none',
-    coName: 'text-white text-lg font-semibold tracking-[0.1em]',
-    badge: 'w-5 h-5 rounded bg-purple-800/60 flex items-center justify-center text-[10px] font-bold text-purple-200 flex-shrink-0',
-    badgeText: 'text-purple-200/80 text-xs',
-    invoiceWord: 'text-purple-200 text-3xl font-light tracking-[0.5em] mb-4',
-    metaLabel: 'text-[9px] font-semibold uppercase tracking-[0.15em] text-purple-400 mb-0.5',
-    metaVal: 'text-purple-100 text-xs font-mono',
-    input: 'bg-white/5 border border-purple-700 hover:border-purple-400 focus:border-purple-300 focus:bg-white/10 outline-none rounded px-1 py-0.5 text-white text-xs transition-colors w-full placeholder-purple-500',
-    sectionLabel: 'text-[10px] font-semibold uppercase tracking-widest text-violet-400 mb-2',
-    box: 'border border-violet-100 rounded-xl p-3 min-h-[90px] bg-violet-50/40',
-    theadRow: 'border-b border-violet-200',
-    theadTh: 'text-violet-400',
-    grandTotal: 'text-violet-700',
-    statsTotal: 'text-violet-500',
-    paidText: 'text-emerald-300',
-    pendingText: 'text-amber-200',
+    docCls: 'flex-1 bg-white rounded-xl shadow-invoice overflow-hidden relative min-w-0',
+    headerCls: 'bg-brand px-8 pt-8 pb-6',
+    logoMark: 'text-accent-light font-bold text-sm leading-none',
+    coName: 'text-white text-xl font-bold tracking-tight',
+    badge: 'w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white/70 flex-shrink-0',
+    badgeText: 'text-white/60 text-xs',
+    invoiceWord: 'text-accent-light text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
+    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-white/40 mb-1',
+    metaVal: 'text-white text-sm font-semibold',
+    input: 'bg-white/10 border border-white/15 hover:border-white/30 focus:border-accent-light focus:bg-white/15 outline-none rounded-lg px-2.5 py-1.5 text-white text-sm transition-colors w-full placeholder-white/30',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2',
+    box: 'border border-slate-200 rounded-lg p-4 min-h-[90px]',
+    theadRow: 'border-b-2 border-brand',
+    theadTh: 'text-slate-600',
+    grandTotal: 'text-accent-dark',
+    statsTotal: 'text-accent',
+    paidText: 'text-emerald-600',
+    pendingText: 'text-amber-600',
   },
 
-  // MBC — solid teal header, fully rounded everywhere, warm & welcoming
-  friendly: {
-    darkHeader: true,
-    docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-teal-500 px-7 pt-8 pb-8',
-    logoMark: 'text-white/60 font-black text-lg leading-none',
-    coName: 'text-white text-lg font-bold',
-    badge: 'w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0',
-    badgeText: 'text-teal-100 text-xs',
-    invoiceWord: 'text-white text-4xl font-bold tracking-wide mb-4',
-    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-teal-200 mb-0.5',
-    metaVal: 'text-white text-xs font-semibold',
-    input: 'bg-white/15 border border-white/25 hover:border-white/50 focus:border-white focus:bg-white/20 outline-none rounded-full px-2 py-0.5 text-white text-xs transition-colors w-full placeholder-teal-200',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-teal-500 mb-2',
-    box: 'border border-teal-100 rounded-2xl p-3 min-h-[90px] bg-teal-50/50',
-    theadRow: 'border-b-2 border-teal-300',
-    theadTh: 'text-teal-600',
-    grandTotal: 'text-teal-600',
-    statsTotal: 'text-teal-500',
-    paidText: 'text-emerald-200',
-    pendingText: 'text-amber-200',
+  soft: {
+    name: 'Soft Professional',
+    description: 'Gentle tinted header, rounded, understated',
+    swatchCls: 'bg-accent/10 border border-accent/20',
+    darkHeader: false,
+    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-slate-100',
+    headerCls: 'bg-accent/5 px-8 pt-8 pb-6 border-b border-accent/10',
+    logoMark: 'text-accent font-bold text-sm leading-none',
+    coName: 'text-slate-800 text-xl font-semibold tracking-tight',
+    badge: 'w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent-dark flex-shrink-0',
+    badgeText: 'text-slate-500 text-xs',
+    invoiceWord: 'text-accent text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
+    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1',
+    metaVal: 'text-slate-700 text-sm font-semibold',
+    input: 'bg-white border border-accent/20 hover:border-accent/40 focus:border-accent outline-none rounded-lg px-2.5 py-1.5 text-slate-700 text-sm transition-colors w-full placeholder-slate-300',
+    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-accent-dark mb-2',
+    box: 'border border-accent/15 rounded-xl p-4 min-h-[90px] bg-accent/5',
+    theadRow: 'border-b-2 border-accent/30',
+    theadTh: 'text-accent-dark',
+    grandTotal: 'text-accent-dark',
+    statsTotal: 'text-accent',
+    paidText: 'text-emerald-600',
+    pendingText: 'text-amber-600',
   },
 };
+
+export const TEMPLATE_LIST = Object.entries(TEMPLATES).map(([id, t]) => ({
+  id, name: t.name, description: t.description, swatchCls: t.swatchCls,
+}));
+
+const THEMES = TEMPLATES;
 
 function ContactRow({ letter, value, t }) {
   if (!value) return null;
@@ -175,7 +144,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
   const invoiceRef = useRef(null);
   const isNew = invoiceId === 'new';
 
-  const t = THEMES[company?.theme || 'corporate'];
+  const t = THEMES[company?.invoiceTemplate] || THEMES.minimal;
 
   const [invoice, setInvoice] = useState(() =>
     isNew
@@ -419,11 +388,13 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               <div className="flex-shrink-0 text-right">
                 <div className={t.invoiceWord}>INVOICE</div>
 
-                <div className="space-y-3 text-left min-w-[200px]">
-                  {/* Invoice # */}
-                  <div>
+                {/* Grid guarantees each field its own row/column — never overlaps,
+                    regardless of content length or native input chrome height. */}
+                <div className="grid grid-cols-2 gap-x-5 gap-y-3 text-left min-w-[220px]">
+                  {/* Invoice # — full width, primary identifier */}
+                  <div className="col-span-2">
                     <div className={t.metaLabel}>Invoice #</div>
-                    <div className={`${t.metaVal} h-6 flex items-center`}>{invoice.invoiceNumber}</div>
+                    <div className={`${t.metaVal} min-h-[34px] flex items-center`}>{invoice.invoiceNumber}</div>
                   </div>
 
                   {/* Date */}
@@ -431,33 +402,33 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                     <div className={t.metaLabel}>Date</div>
                     <input
                       type="date"
-                      className={`${t.input} h-6`}
+                      className={`${t.input} min-h-[34px]`}
                       value={invoice.date}
                       onChange={e => upd({ date: e.target.value })}
                     />
                   </div>
 
-                  {/* Status toggle */}
+                  {/* Status toggle — horizontally aligned with Date */}
                   <div>
                     <div className={t.metaLabel}>Status</div>
-                    <div className="flex items-center gap-2 h-6">
+                    <div className="flex items-center gap-2 min-h-[34px]">
                       <button
                         onClick={toggleStatus}
                         className={`relative flex items-center h-6 w-12 rounded-full transition-colors duration-300 flex-shrink-0 ${isPaid ? 'bg-emerald-500' : 'bg-amber-400'}`}
                       >
                         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-300 ${isPaid ? 'translate-x-6' : 'translate-x-0.5'}`} />
                       </button>
-                      <span className={`text-xs font-bold leading-none ${isPaid ? t.paidText : t.pendingText}`}>
-                        {isPaid ? 'PAID' : 'PENDING'}
+                      <span className={`text-xs font-bold leading-none whitespace-nowrap ${isPaid ? t.paidText : t.pendingText}`}>
+                        {isPaid ? 'PAID' : 'UNPAID'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Service ID */}
-                  <div>
+                  {/* Service ID — full width */}
+                  <div className="col-span-2">
                     <div className={t.metaLabel}>Service ID</div>
                     <input
-                      className={`${t.input} h-6`}
+                      className={`${t.input} min-h-[34px]`}
                       placeholder="—"
                       value={invoice.serviceId || ''}
                       onChange={e => upd({ serviceId: e.target.value })}
@@ -469,7 +440,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
           </div>
 
           {/* ─── CUSTOMER / BANK BOXES ─── */}
-          <div className="px-7 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="px-8 py-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <div className={t.sectionLabel}>Customer details</div>
               <div className={t.box}>
@@ -507,7 +478,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
           <Stamp status={invoice.status} />
 
           {/* ─── LINE ITEMS ─── */}
-          <div className="px-7 pb-2">
+          <div className="px-8 pb-2">
             <table className="w-full text-sm">
               <thead>
                 <tr className={t.theadRow}>
@@ -577,7 +548,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
           </div>
 
           {/* ─── TOTALS ─── */}
-          <div className="px-7 pb-6 mt-4">
+          <div className="px-8 pb-6 mt-4">
             <div className="border-t border-slate-200 pt-4 ml-auto max-w-xs space-y-2">
               <div className="flex justify-between text-sm text-slate-600">
                 <span>Subtotal</span>
@@ -609,7 +580,7 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
           </div>
 
           {/* ─── NOTES ─── */}
-          <div className="px-7 pb-6">
+          <div className="px-8 pb-8">
             <div className={t.sectionLabel}>Notes</div>
             <textarea
               className="inv-textarea h-16 text-xs"

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+ import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Save, X, RotateCcw } from 'lucide-react';
+import { Save, X, RotateCcw, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { TEMPLATE_LIST } from './InvoiceEditor';
 
 const FIELDS = [
   { key: 'name', label: 'Company Name', type: 'text' },
@@ -59,6 +60,36 @@ export default function CompanySettings({ companyId, setView }) {
             />
           </div>
         ))}
+
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2.5">
+            Invoice Template
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {TEMPLATE_LIST.map(tpl => {
+              const active = (form.invoiceTemplate || 'minimal') === tpl.id;
+              return (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, invoiceTemplate: tpl.id }))}
+                  className={`relative text-left p-3 rounded-xl border-2 transition-all ${
+                    active ? 'border-accent bg-accent/5' : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  {active && (
+                    <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-accent flex items-center justify-center">
+                      <Check size={11} className="text-white" strokeWidth={3} />
+                    </span>
+                  )}
+                  <div className={`w-full h-8 rounded-lg mb-2 ${tpl.swatchCls}`} />
+                  <div className="text-xs font-bold text-slate-800">{tpl.name}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">{tpl.description}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="flex gap-3 pt-2">
           <button
