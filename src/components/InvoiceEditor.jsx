@@ -15,7 +15,7 @@ import SignaturePanel from './SignaturePanel';
 const t = {
   docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-black/5',
   headerCls: 'bg-brand px-8 pt-9 pb-7',
-  metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-white/35 mb-1',
+  metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-white/35 mb-2',
   metaVal: 'text-white text-sm font-semibold',
   input: 'bg-white/[0.07] border border-white/15 hover:border-accent-light/40 focus:border-accent-light focus:bg-white/[0.12] outline-none rounded-lg px-2.5 py-1.5 text-white text-sm transition-colors w-full placeholder-white/25',
   sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-accent-dark mb-2',
@@ -257,8 +257,11 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
         drawH = pageH;
         drawW = drawH / imgRatio;
       }
+      // Anchor to the top of the page instead of centering vertically —
+      // centering left a band of blank white space above the header,
+      // which read as an extra "white heading" before the invoice itself.
       const x = (pageW - drawW) / 2;
-      const y = (pageH - drawH) / 2;
+      const y = 0;
       pdf.addImage(img, 'PNG', x, y, drawW, drawH);
 
       pdf.save(`${invoice.invoiceNumber}.pdf`);
@@ -531,12 +534,14 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
           {/* ─── NOTES ─── */}
           <div className="px-8 pb-8">
             <div className={t.sectionLabel}>Notes</div>
-            <textarea
-              className="inv-textarea h-16 text-xs"
-              placeholder="Payment instructions, terms, or notes…"
-              value={invoice.notes}
-              onChange={e => upd({ notes: e.target.value })}
-            />
+            <div className="border border-slate-200 rounded-xl p-4 min-h-[64px] bg-slate-50/70">
+              <textarea
+                className="inv-textarea h-16 text-xs"
+                placeholder="Payment instructions, terms, or notes…"
+                value={invoice.notes}
+                onChange={e => upd({ notes: e.target.value })}
+              />
+            </div>
           </div>
           </div>
         </div>

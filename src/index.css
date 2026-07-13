@@ -1,4 +1,4 @@
-@tailwind base;
+ @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -18,24 +18,31 @@
   }
 }
 
-/* Editable invoice fields — look plain until focused */
-.inv-field {
-  @apply bg-transparent border-transparent outline-none transition-colors;
-  border: 1px solid transparent;
+/* Editable invoice fields — look plain until focused. Wrapped in @layer
+   components so a utility class placed alongside (e.g. text-xs on the Notes
+   textarea) still wins the cascade instead of being silently overridden by
+   this class's own text-sm — plain CSS below @tailwind utilities would
+   otherwise always take precedence regardless of class order in the JSX. */
+@layer components {
+  .inv-field {
+    @apply bg-transparent border-transparent outline-none transition-colors;
+    border: 1px solid transparent;
+  }
+  .inv-field:hover { @apply border-accent/30 rounded; }
+  .inv-field:focus { @apply border-accent rounded bg-white/80 shadow-sm; }
+  .inv-textarea {
+    @apply w-full bg-transparent border border-transparent rounded-sm resize-none outline-none transition-colors text-sm leading-relaxed;
+  }
+  .inv-textarea:hover { @apply border-accent/30; }
+  .inv-textarea:focus { @apply border-accent bg-white/80 shadow-sm; }
 }
-.inv-field:hover { @apply border-accent/30 rounded; }
-.inv-field:focus { @apply border-accent rounded bg-white/80 shadow-sm; }
-.inv-textarea {
-  @apply w-full bg-transparent border border-transparent rounded-sm resize-none outline-none transition-colors text-sm leading-relaxed;
-}
-.inv-textarea:hover { @apply border-accent/30; }
-.inv-textarea:focus { @apply border-accent bg-white/80 shadow-sm; }
 
-/* Stamp */
+/* Stamp — anchored bottom-left so it never overlaps the right-aligned
+   totals pill, which sits in the same lower band of the document. */
 .stamp-wrap {
   position: absolute;
   bottom: 80px;
-  right: 60px;
+  left: 60px;
   pointer-events: none;
   user-select: none;
   z-index: 10;
