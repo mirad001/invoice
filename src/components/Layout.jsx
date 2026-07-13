@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { lightenRgb } from '../utils/invoiceUtils';
 
 export default function Layout({ children, view, setView }) {
   const { currentUser, logout, companies, invoices, peekAndBumpCounter } = useApp();
@@ -23,9 +24,11 @@ export default function Layout({ children, view, setView }) {
     if (co?.accentRgb) {
       document.documentElement.style.setProperty('--accent', co.accentRgb);
       document.documentElement.style.setProperty('--accent-dark', co.accentDarkRgb || co.accentRgb);
+      document.documentElement.style.setProperty('--accent-light', lightenRgb(co.accentRgb));
     } else {
       document.documentElement.style.setProperty('--accent', '30 136 229');
       document.documentElement.style.setProperty('--accent-dark', '21 101 192');
+      document.documentElement.style.setProperty('--accent-light', '96 165 250');
     }
   }, [activeCompany?.accentRgb]);
 

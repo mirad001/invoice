@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Trash2, Printer, FileDown, Plus, Loader2 } from 'lucide-react';
+import { Trash2, Printer, FileDown, Plus, Loader2, MapPin, Phone, Mail, Globe } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
   calculateTotals, formatCurrency, formatDate, newId, newItemId,
@@ -9,99 +9,32 @@ import { DEFAULT_LINE_ITEMS } from '../config/companies';
 import Stamp from './Stamp';
 import SignaturePanel from './SignaturePanel';
 
-// ─── Invoice templates ────────────────────────────────────────────────────
-// Three curated designs. Every company picks one (persisted per-company via
-// company.invoiceTemplate) instead of getting a fixed look. Each accents with
-// the company's own --accent colour; only the neutral/background differs.
-export const TEMPLATES = {
-  minimal: {
-    name: 'Modern Minimal',
-    description: 'White header, thin rule, generous whitespace',
-    swatchCls: 'bg-white border border-slate-200',
-    darkHeader: false,
-    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-white px-8 pt-8 pb-6 border-b border-slate-200',
-    logoMark: 'text-accent font-bold text-sm leading-none',
-    coName: 'text-slate-900 text-xl font-bold tracking-tight',
-    badge: 'w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 flex-shrink-0',
-    badgeText: 'text-slate-500 text-xs',
-    invoiceWord: 'text-accent text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
-    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1',
-    metaVal: 'text-slate-800 text-sm font-semibold',
-    input: 'bg-slate-50 border border-slate-200 hover:border-accent/50 focus:border-accent focus:bg-white outline-none rounded-lg px-2.5 py-1.5 text-slate-800 text-sm transition-colors w-full placeholder-slate-300',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2',
-    box: 'border border-slate-200 rounded-xl p-4 min-h-[90px] bg-slate-50/50',
-    theadRow: 'border-b-2 border-slate-800',
-    theadTh: 'text-slate-500',
-    grandTotal: 'text-accent',
-    statsTotal: 'text-accent',
-    paidText: 'text-emerald-600',
-    pendingText: 'text-amber-600',
-  },
-
-  corporate: {
-    name: 'Bold Corporate',
-    description: 'Solid dark-neutral header, confident and formal',
-    swatchCls: 'bg-brand',
-    darkHeader: true,
-    docCls: 'flex-1 bg-white rounded-xl shadow-invoice overflow-hidden relative min-w-0',
-    headerCls: 'bg-brand px-8 pt-8 pb-6',
-    logoMark: 'text-accent-light font-bold text-sm leading-none',
-    coName: 'text-white text-xl font-bold tracking-tight',
-    badge: 'w-5 h-5 rounded-md bg-white/10 flex items-center justify-center text-[10px] font-bold text-white/70 flex-shrink-0',
-    badgeText: 'text-white/60 text-xs',
-    invoiceWord: 'text-accent-light text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
-    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-white/40 mb-1',
-    metaVal: 'text-white text-sm font-semibold',
-    input: 'bg-white/10 border border-white/15 hover:border-white/30 focus:border-accent-light focus:bg-white/15 outline-none rounded-lg px-2.5 py-1.5 text-white text-sm transition-colors w-full placeholder-white/30',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2',
-    box: 'border border-slate-200 rounded-lg p-4 min-h-[90px]',
-    theadRow: 'border-b-2 border-brand',
-    theadTh: 'text-slate-600',
-    grandTotal: 'text-accent-dark',
-    statsTotal: 'text-accent',
-    paidText: 'text-emerald-600',
-    pendingText: 'text-amber-600',
-  },
-
-  soft: {
-    name: 'Soft Professional',
-    description: 'Gentle tinted header, rounded, understated',
-    swatchCls: 'bg-accent/10 border border-accent/20',
-    darkHeader: false,
-    docCls: 'flex-1 bg-white rounded-2xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-slate-100',
-    headerCls: 'bg-accent/5 px-8 pt-8 pb-6 border-b border-accent/10',
-    logoMark: 'text-accent font-bold text-sm leading-none',
-    coName: 'text-slate-800 text-xl font-semibold tracking-tight',
-    badge: 'w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center text-[10px] font-bold text-accent-dark flex-shrink-0',
-    badgeText: 'text-slate-500 text-xs',
-    invoiceWord: 'text-accent text-[11px] font-bold uppercase tracking-[0.25em] mb-3',
-    metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1',
-    metaVal: 'text-slate-700 text-sm font-semibold',
-    input: 'bg-white border border-accent/20 hover:border-accent/40 focus:border-accent outline-none rounded-lg px-2.5 py-1.5 text-slate-700 text-sm transition-colors w-full placeholder-slate-300',
-    sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-accent-dark mb-2',
-    box: 'border border-accent/15 rounded-xl p-4 min-h-[90px] bg-accent/5',
-    theadRow: 'border-b-2 border-accent/30',
-    theadTh: 'text-accent-dark',
-    grandTotal: 'text-accent-dark',
-    statsTotal: 'text-accent',
-    paidText: 'text-emerald-600',
-    pendingText: 'text-amber-600',
-  },
+// ─── Invoice design ───────────────────────────────────────────────────────
+// One signature "Dark Premium" look, shared by every company. Only the
+// accent colour (company.accentRgb / --accent) changes between companies.
+const t = {
+  docCls: 'flex-1 bg-white rounded-3xl shadow-invoice overflow-hidden relative min-w-0 ring-1 ring-black/5',
+  headerCls: 'bg-brand px-8 pt-9 pb-7',
+  metaLabel: 'text-[9px] font-semibold uppercase tracking-widest text-white/35 mb-1',
+  metaVal: 'text-white text-sm font-semibold',
+  input: 'bg-white/[0.07] border border-white/15 hover:border-accent-light/40 focus:border-accent-light focus:bg-white/[0.12] outline-none rounded-lg px-2.5 py-1.5 text-white text-sm transition-colors w-full placeholder-white/25',
+  sectionLabel: 'text-[10px] font-bold uppercase tracking-widest text-accent-dark mb-2',
+  box: 'border border-slate-200 rounded-xl p-4 min-h-[90px] bg-slate-50/70',
+  theadRow: 'border-b-2 border-brand',
+  theadTh: 'text-slate-500',
+  statsTotal: 'text-accent',
+  paidText: 'text-emerald-600',
+  pendingText: 'text-amber-600',
 };
 
-export const TEMPLATE_LIST = Object.entries(TEMPLATES).map(([id, t]) => ({
-  id, name: t.name, description: t.description, swatchCls: t.swatchCls,
-}));
-
-const THEMES = TEMPLATES;
-
-function ContactRow({ letter, value, t }) {
+function ContactRow({ icon: Icon, value }) {
   if (!value) return null;
   return (
     <div className="flex items-center gap-2">
-      <span className={t.badge}>{letter}</span>
-      <span className={t.badgeText}>{value}</span>
+      <span className="w-5 h-5 rounded-md bg-white/10 ring-1 ring-white/10 flex items-center justify-center text-accent-light flex-shrink-0">
+        <Icon size={11} />
+      </span>
+      <span className="text-white/55 text-xs">{value}</span>
     </div>
   );
 }
@@ -143,8 +76,6 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
   const company = companies.find(c => c.id === companyId);
   const invoiceRef = useRef(null);
   const isNew = invoiceId === 'new';
-
-  const t = THEMES[company?.invoiceTemplate] || THEMES.minimal;
 
   const [invoice, setInvoice] = useState(() =>
     isNew
@@ -382,21 +313,21 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
               {/* Left: logo + contact */}
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className={t.logoMark}>//</span>
-                  <h1 className={t.coName}>{company.name}</h1>
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-9 h-9 rounded-lg bg-white/10 ring-1 ring-white/10 flex items-center justify-center text-accent-light font-black text-base leading-none flex-shrink-0">//</span>
+                  <h1 className="text-white text-2xl font-bold tracking-tight">{company.name}</h1>
                 </div>
                 <div className="space-y-1.5">
-                  <ContactRow letter="A" value={company.address} t={t} />
-                  <ContactRow letter="P" value={company.phone} t={t} />
-                  <ContactRow letter="E" value={company.email} t={t} />
-                  <ContactRow letter="W" value={company.website} t={t} />
+                  <ContactRow icon={MapPin} value={company.address} />
+                  <ContactRow icon={Phone} value={company.phone} />
+                  <ContactRow icon={Mail} value={company.email} />
+                  <ContactRow icon={Globe} value={company.website} />
                 </div>
               </div>
 
               {/* Right: INVOICE + meta */}
               <div className="flex-shrink-0 text-right">
-                <div className={t.invoiceWord}>INVOICE</div>
+                <div className="text-accent-light text-[11px] font-bold uppercase tracking-[0.3em] mb-3">INVOICE</div>
 
                 {/* Plain flex stacking (not CSS grid — html2canvas renders grid
                     unreliably) with min-height instead of forced height, so
@@ -450,6 +381,12 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
               </div>
             </div>
           </div>
+
+          {/* Accent seam — signature detail marking the header/body transition */}
+          <div
+            className="h-[3px] w-full"
+            style={{ background: 'linear-gradient(90deg, rgb(var(--accent-light)), rgb(var(--accent)), rgb(var(--accent-dark)))' }}
+          />
 
           {/* ─── CUSTOMER / BANK BOXES ─── */}
           <div className="px-8 py-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -561,10 +498,10 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
 
           {/* ─── TOTALS ─── */}
           <div className="px-8 pb-6 mt-4">
-            <div className="border-t border-slate-200 pt-4 ml-auto max-w-xs space-y-2">
+            <div className="ml-auto max-w-xs space-y-2">
               <div className="flex justify-between text-sm text-slate-600">
                 <span>Subtotal</span>
-                <span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
+                <span className="font-medium tabular-nums">{formatCurrency(invoice.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-slate-600 items-center">
                 <span className="flex items-center gap-1">
@@ -582,11 +519,11 @@ export default function InvoiceEditor({ companyId, invoiceId, invoiceNumber, set
                   </span>
                   <span className="print-only hidden">({(invoice.taxRate * 100).toFixed(0)}%)</span>
                 </span>
-                <span className="font-medium">{formatCurrency(invoice.tax)}</span>
+                <span className="font-medium tabular-nums">{formatCurrency(invoice.tax)}</span>
               </div>
-              <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
-                <span>Total (AUD)</span>
-                <span className={t.grandTotal}>{formatCurrency(invoice.grandTotal)}</span>
+              <div className="flex justify-between items-center bg-brand rounded-xl px-4 py-3 mt-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Total (AUD)</span>
+                <span className="text-lg font-black text-accent-light tabular-nums">{formatCurrency(invoice.grandTotal)}</span>
               </div>
             </div>
           </div>

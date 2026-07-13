@@ -10,8 +10,7 @@ export const DEFAULT_COMPANIES = [
     address: '1131 Mount Cotton Rd, Burbank QLD 4123',
     accentRgb: '30 136 229',
     accentDarkRgb: '21 101 192',
-    bankDetails: 'Account Name: Bond Cleaners in Brisbane\nBSB: TBC\nAccount No: TBC',
-    invoiceTemplate: 'minimal',
+    bankDetails: 'Account Name: Bond Cleaners in Brisbane\nBSB: TBC\nAccount No: TBC',
   },
   {
     id: 'BCA',
@@ -23,8 +22,7 @@ export const DEFAULT_COMPANIES = [
     address: '1131 Mount Cotton Rd, Burbank QLD 4123',
     accentRgb: '249 154 31',
     accentDarkRgb: '220 130 10',
-    bankDetails: 'Account Name: Bond Cleaners Australia\nBSB: TBC\nAccount No: TBC',
-    invoiceTemplate: 'corporate',
+    bankDetails: 'Account Name: Bond Cleaners Australia\nBSB: TBC\nAccount No: TBC',
   },
   {
     id: 'SBC',
@@ -36,8 +34,7 @@ export const DEFAULT_COMPANIES = [
     address: '1131 Mount Cotton Rd, Burbank QLD 4123',
     accentRgb: '34 197 94',
     accentDarkRgb: '22 163 74',
-    bankDetails: 'Account Name: Shine Bond Clean\nBSB: TBC\nAccount No: TBC',
-    invoiceTemplate: 'soft',
+    bankDetails: 'Account Name: Shine Bond Clean\nBSB: TBC\nAccount No: TBC',
   },
   {
     id: 'SSS',
@@ -49,8 +46,7 @@ export const DEFAULT_COMPANIES = [
     address: '20 Borman St, Slacks Creek QLD 4127',
     accentRgb: '139 92 246',
     accentDarkRgb: '124 58 237',
-    bankDetails: 'Account Name: SSS OZ Cleaning\nBSB: TBC\nAccount No: TBC',
-    invoiceTemplate: 'minimal',
+    bankDetails: 'Account Name: SSS OZ Cleaning\nBSB: TBC\nAccount No: TBC',
   },
   {
     id: 'MBC',
@@ -62,8 +58,7 @@ export const DEFAULT_COMPANIES = [
     address: 'TBC',
     accentRgb: '20 184 166',
     accentDarkRgb: '13 148 136',
-    bankDetails: 'Account Name: Mama Bond Cleaners\nBSB: TBC\nAccount No: TBC',
-    invoiceTemplate: 'corporate',
+    bankDetails: 'Account Name: Mama Bond Cleaners\nBSB: TBC\nAccount No: TBC',
   },
 ];
 

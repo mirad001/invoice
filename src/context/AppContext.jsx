@@ -24,18 +24,7 @@ export function AppProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => load('bond_user', null));
   const [invoices, setInvoices]       = useState(() => load('bond_invoices', []));
   const [counters, setCounters]       = useState(() => load('bond_counters', {}));
-  const [companies, setCompanies]     = useState(() => {
-    const stored = load('bond_companies', null);
-    if (!stored) return DEFAULT_COMPANIES;
-    // Back-fill invoiceTemplate on companies saved before templates existed,
-    // so existing browsers regain per-company colour instead of all
-    // silently falling back to the same default template.
-    return stored.map(c => {
-      if (c.invoiceTemplate) return c;
-      const def = DEFAULT_COMPANIES.find(d => d.id === c.id);
-      return { ...c, invoiceTemplate: def?.invoiceTemplate || 'minimal' };
-    });
-  });
+  const [companies, setCompanies]     = useState(() => load('bond_companies', null) || DEFAULT_COMPANIES);
   const [adminCreds, setAdminCreds]   = useState(() => load('bond_admin_creds', DEFAULT_ADMIN));
 
   useEffect(() => { save('bond_user', currentUser); },   [currentUser]);

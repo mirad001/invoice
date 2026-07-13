@@ -80,3 +80,12 @@ export function newId() {
 export function newItemId() {
   return `item_${Math.random().toString(36).slice(2, 9)}`;
 }
+
+// Lightens a "R G B" triplet toward white so a company's accent colour
+// stays readable as text on a dark background (used for --accent-light).
+export function lightenRgb(rgbStr, amount = 0.55) {
+  if (!rgbStr) return '96 165 250';
+  const [r, g, b] = rgbStr.split(' ').map(Number);
+  const mix = (c) => Math.round(c + (255 - c) * amount);
+  return `${mix(r)} ${mix(g)} ${mix(b)}`;
+}
